@@ -1,3 +1,22 @@
 {{~#equals @root.httpClient 'fetch'}}{{>fetch/request}}{{/equals~}}
 {{~#equals @root.httpClient 'xhr'}}{{>xhr/request}}{{/equals~}}
 {{~#equals @root.httpClient 'node'}}{{>node/request}}{{/equals~}}
+
+
+import schemas from './schema.js';
+
+function findJsonSchema(operationId: string, code: number):any {
+  let operation = schemas[operationId];
+  if(!!!operation) {
+    return null;
+  }
+  let responses = operation['responses'];
+  if(!!!responses) {
+    return null;
+  }
+  let r = responses[code.toString()];
+  if(!!!r) {
+    return null;
+  }
+  return r;
+}

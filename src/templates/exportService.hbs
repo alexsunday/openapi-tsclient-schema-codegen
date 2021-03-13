@@ -6,6 +6,9 @@ import type { {{{this}}} } from '../models/{{{this}}}';
 {{/each}}
 {{/if}}
 import { request as __request } from '../core/request';
+import { findJsonSchema as __findJsonSchema} from '../core/request';
+import { ApiError } from '../core/ApiError';
+import Ajv from 'ajv';
 {{#if @root.useVersion}}
 import { OpenAPI } from '../core/OpenAPI';
 {{/if}}
@@ -81,6 +84,15 @@ export class {{{name}}} {
             },
             {{/if}}
         });
+
+const schema = __findJsonSchema("{{{name}}}", result.status);
+if(!!schema) {
+  const valid = (new Ajv()).validate(schema, result.body);
+  if(!!!valid) {
+    throw new ApiError(result, "服务器数据校验错误");
+  }
+}
+
         return result.body;
     }
 
