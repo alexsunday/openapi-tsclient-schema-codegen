@@ -4,8 +4,8 @@
 
 //
 
-import schemas from '../schema.js';
 import Ajv from 'ajv';
+const schemas = require("../schema");
 
 export function checkJsonSchema(operationId: string, result: ApiResult):boolean {
   let operation = schemas[operationId];
