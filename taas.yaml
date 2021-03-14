@@ -291,8 +291,6 @@ components:
           description: 菜单项访问uri路径
         menus:
           type: array
-          items:
-            $ref: '#/components/schemas/Menu'
           description: 本菜单项下子菜单对象列表
     CommonResponse:
       type: object

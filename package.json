@@ -43,6 +43,8 @@
         "types/index.d.ts"
     ],
     "scripts": {
+        "action": "yarn build && node ./bin/index.js -i taas.yaml -o codegen && node bin/exp_schema.js taas.yaml >codegen/schema.js",
+        "schema": "openapi2schema -i taas.yaml -p >dist/schema.js",
         "clean": "rimraf ./dist ./test/generated ./test/e2e/generated ./samples/generated ./coverage ./node_modules/.cache",
         "build": "rollup --config --environment NODE_ENV:development",
         "build:watch": "rollup --config --environment NODE_ENV:development --watch",
@@ -61,12 +63,16 @@
         "codecov": "codecov --token=66c30c23-8954-4892-bef9-fbaed0a2e42b"
     },
     "dependencies": {
+        "@apidevtools/swagger-parser": "^10.0.2",
+        "@openapi-contrib/openapi-schema-to-json-schema": "^3.0.4",
         "camelcase": "^6.2.0",
         "commander": "^7.0.0",
         "handlebars": "^4.7.6",
         "js-yaml": "^4.0.0",
         "json-schema-ref-parser": "^9.0.7",
         "mkdirp": "^1.0.4",
+        "openapi-typescript": "^3.1.2",
+        "openapi2schema": "^0.5.0",
         "rimraf": "^3.0.2"
     },
     "devDependencies": {

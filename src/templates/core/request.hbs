@@ -2,21 +2,33 @@
 {{~#equals @root.httpClient 'xhr'}}{{>xhr/request}}{{/equals~}}
 {{~#equals @root.httpClient 'node'}}{{>node/request}}{{/equals~}}
 
+//
 
-import schemas from './schema.js';
+import schemas from '../schema.js';
+import Ajv from 'ajv';
 
-function findJsonSchema(operationId: string, code: number):any {
+export function checkJsonSchema(operationId: string, result: ApiResult):boolean {
   let operation = schemas[operationId];
   if(!!!operation) {
-    return null;
+    return false;
   }
   let responses = operation['responses'];
   if(!!!responses) {
-    return null;
+    return false;
   }
+  let code = result.status;
   let r = responses[code.toString()];
   if(!!!r) {
-    return null;
+    return false;
   }
-  return r;
+
+  const ajv = new Ajv();
+  const validator = ajv.compile(r);
+  const valid = validator(r, result.body);
+  if(!!!valid) {
+    console.info(validator.errors);
+    throw new ApiError(result, "服务器数据校验错误");
+  }
+
+  return true;
 }
