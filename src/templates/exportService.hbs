@@ -5,8 +5,8 @@
 import type { {{{this}}} } from '../models/{{{this}}}';
 {{/each}}
 {{/if}}
-import { request as __request } from '../core/request';
-import { checkJsonSchema as __checkJsonSchema} from '../core/request';
+import { request as __request, checkJsonSchema as __checkJsonSchema } from '../../core/request';
+const schemas = require("../schema");
 {{#if @root.useVersion}}
 import { OpenAPI } from '../core/OpenAPI';
 {{/if}}
@@ -83,7 +83,7 @@ export class {{{name}}} {
             {{/if}}
         });
 
-        __checkJsonSchema("{{{name}}}", result);
+        __checkJsonSchema("{{{operationId}}}", schemas, result);
         return result.body;
     }
 

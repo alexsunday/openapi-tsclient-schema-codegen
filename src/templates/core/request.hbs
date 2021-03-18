@@ -5,9 +5,8 @@
 //
 
 import Ajv from 'ajv';
-const schemas = require("../schema");
 
-export function checkJsonSchema(operationId: string, result: ApiResult):boolean {
+export function checkJsonSchema(operationId: string, schemas: any, result: ApiResult):boolean {
   let operation = schemas[operationId];
   if(!!!operation) {
     return false;

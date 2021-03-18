@@ -43,7 +43,7 @@
         "types/index.d.ts"
     ],
     "scripts": {
-        "action": "yarn build && node ./bin/index.js -i taas.yaml -o codegen && node bin/exp_schema.js taas.yaml >codegen/schema.js",
+        "action": "yarn build && node ./bin/index.js -i yaml/taas.yaml -o codegen && node bin/exp_schema.js yaml/taas.yaml >codegen/schema.js",
         "schema": "openapi2schema -i taas.yaml -p >dist/schema.js",
         "clean": "rimraf ./dist ./test/generated ./test/e2e/generated ./samples/generated ./coverage ./node_modules/.cache",
         "build": "rollup --config --environment NODE_ENV:development",
