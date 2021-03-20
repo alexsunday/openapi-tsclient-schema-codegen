@@ -1,21 +1,22 @@
 {
-    "name": "openapi-typescript-codegen",
-    "version": "0.9.0",
-    "description": "Library that generates Typescript clients based on the OpenAPI specification.",
+    "name": "openapi-tsclient-schema-codegen",
+    "version": "0.0.5",
+    "description": "Library that generates Typescript clients based on the OpenAPI specification, fork from ferdikoomen/openapi-typescript-codegen",
     "author": "Ferdi Koomen",
-    "homepage": "https://github.com/ferdikoomen/openapi-typescript-codegen",
+    "homepage": "https://github.com/alexsunday/openapi-typescript-codegen",
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/ferdikoomen/openapi-typescript-codegen.git"
+        "url": "git+https://github.com/alexsunday/openapi-typescript-codegen.git"
     },
     "bugs": {
-        "url": "https://github.com/ferdikoomen/openapi-typescript-codegen/issues"
+        "url": "https://github.com/alexsunday/openapi-typescript-codegen/issues"
     },
     "license": "MIT",
     "keywords": [
         "openapi",
         "swagger",
         "codegen",
+        "json-schema",
         "generator",
         "client",
         "typescript",
@@ -35,10 +36,11 @@
     "module": "dist/index.js",
     "types": "types/index.d.ts",
     "bin": {
-        "openapi": "bin/index.js"
+        "codegen": "bin/codegen.js"
     },
     "files": [
         "bin/index.js",
+        "bin/codegen.js",
         "dist/index.js",
         "types/index.d.ts"
     ],
@@ -73,7 +75,8 @@
         "mkdirp": "^1.0.4",
         "openapi-typescript": "^3.1.2",
         "openapi2schema": "^0.5.0",
-        "rimraf": "^3.0.2"
+        "rimraf": "^3.0.2",
+        "ajv": "6.0.0"
     },
     "devDependencies": {
         "@babel/cli": "7.13.10",
