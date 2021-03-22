@@ -24,10 +24,9 @@ export function checkJsonSchema(operationId: string, schemas: any, result: ApiRe
   const ajv = new Ajv({schemaId: 'id'});
   ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
   const validator = ajv.compile(r);
-  const valid = validator(r, result.body);
+  const valid = validator(result.body);
   if(!valid) {
-    console.info(validator.errors);
-    throw new ApiError(result, "服务器数据校验错误");
+    throw new ApiError(result, "json schema check failed", validator.errors);
   }
 
   return true;
