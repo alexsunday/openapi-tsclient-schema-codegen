@@ -1,9 +1,12 @@
 {{>header}}
 
 import type { ApiRequestOptions } from './ApiRequestOptions';
+import type { ApiResult } from './ApiResult';
 
 type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
 type Headers = Record<string, string>;
+type RequestInterceptor = (options: ApiRequestOptions) => ApiRequestOptions | Promise<ApiRequestOptions>;
+type ResponseInterceptor = (result: ApiResult) => ApiResult | Promise<ApiResult>;
 
 type Config = {
     BASE: string;
@@ -13,6 +16,8 @@ type Config = {
     USERNAME?: string | Resolver<string>;
     PASSWORD?: string | Resolver<string>;
     HEADERS?: Headers | Resolver<Headers>;
+    ReqInterceptors: RequestInterceptor[];
+    RspInterceptors: ResponseInterceptor[];
 }
 
 export const OpenAPI: Config = {
@@ -23,4 +28,14 @@ export const OpenAPI: Config = {
     USERNAME: undefined,
     PASSWORD: undefined,
     HEADERS: undefined,
+    ReqInterceptors: [],
+    RspInterceptors: [],
 };
+
+export function AddRequestInterceptor(r: RequestInterceptor) {
+    OpenAPI.ReqInterceptors.push(r);
+}
+
+export function AddResponseInterceptor(r: ResponseInterceptor) {
+    OpenAPI.RspInterceptors.push(r);
+}

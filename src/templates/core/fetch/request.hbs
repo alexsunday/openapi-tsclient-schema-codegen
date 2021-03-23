@@ -55,17 +55,32 @@ import { OpenAPI } from './OpenAPI';
  */
 export async function request(options: ApiRequestOptions): Promise<ApiResult> {
     const url = getUrl(options);
-    const response = await sendRequest(options, url);
+
+    // request interceptor
+    let reqInterceptors = OpenAPI.ReqInterceptors;
+    for(let i=0; i!==reqInterceptors.length; i++) {
+        let rs = reqInterceptors[i](options);
+        options = await Promise.resolve<ApiRequestOptions>(rs);
+    }
+
+    const response = await sendRequest(options);
     const responseBody = await getResponseBody(response);
     const responseHeader = getResponseHeader(response, options.responseHeader);
 
-    const result: ApiResult = {
+    let result: ApiResult = {
         url,
         ok: response.ok,
         status: response.status,
         statusText: response.statusText,
         body: responseHeader || responseBody,
     };
+
+    // response interceptor
+    let rspInterceptors = OpenAPI.RspInterceptors;
+    for(let i=0; i!==rspInterceptors.length; i++) {
+        let rs = rspInterceptors[i](result);
+        result = await Promise.resolve<ApiResult>(rs)
+    }
 
     catchErrors(options, result);
     return result;
