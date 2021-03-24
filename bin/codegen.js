@@ -41,12 +41,18 @@ async function export_schema(yaml_path, out_dir) {
       let code_json_schema_map = {};
       Object.keys(response).map(code=>{
         let content = response[code].content;
+        if(!!!content) {
+          console.log(`cannot found special code ${code} on ${yaml_path}-${operationId}`);
+          return null;
+        }
         let appJson = content['application/json'];
         if(!!!appJson) {
+          console.log(`cannot found application/json ${code} on ${yaml_path}-${operationId}`);
           return null;
         }
         let schema = appJson.schema;
         if(!!!schema) {
+          console.log(`cannot found ${code} schema on ${yaml_path}-${operationId}`);
           return null;
         }
 
@@ -54,6 +60,7 @@ async function export_schema(yaml_path, out_dir) {
           let jsonSchema = toJsonSchema(schema);
           code_json_schema_map[code] = jsonSchema;
         } catch(e) {
+          console.log(`${code} to jsonSchema failed on ${yaml_path}-${operationId}`);
         }
       });
       rs[operationId] = {
@@ -150,7 +157,7 @@ async function main() {
       }
     } catch(err) {
       console.error(`${item.name} code generate failed.`);
-      // console.error(err);
+      console.error(err);
     }
   }
 }

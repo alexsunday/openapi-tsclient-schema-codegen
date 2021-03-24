@@ -18,6 +18,7 @@ type Config = {
     HEADERS?: Headers | Resolver<Headers>;
     ReqInterceptors: RequestInterceptor[];
     RspInterceptors: ResponseInterceptor[];
+    TIMEOUT: number;
 }
 
 export const OpenAPI: Config = {
@@ -30,6 +31,7 @@ export const OpenAPI: Config = {
     HEADERS: undefined,
     ReqInterceptors: [],
     RspInterceptors: [],
+    TIMEOUT: 30 * 1000,
 };
 
 export function AddRequestInterceptor(r: RequestInterceptor) {
@@ -38,4 +40,8 @@ export function AddRequestInterceptor(r: RequestInterceptor) {
 
 export function AddResponseInterceptor(r: ResponseInterceptor) {
     OpenAPI.RspInterceptors.push(r);
+}
+
+export function SetServiceApiTimeout(timeout: number) {
+    OpenAPI.TIMEOUT = timeout * 1000;
 }

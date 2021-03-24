@@ -7,5 +7,14 @@ async function sendRequest(options: ApiRequestOptions): Promise<Response> {
     if (OpenAPI.WITH_CREDENTIALS) {
         request.credentials = 'include';
     }
-    return await fetch(options.url, request);
+    let url = options.url;
+    if(!url) {
+        url = getUrl(options);
+    }
+
+    let tm = new Promise<Response>((_, reject) => {
+        setTimeout(reject, OpenAPI.TIMEOUT, {reason: "TIMEOUT"});
+    })
+    let p1 = fetch(url, request);
+    return await Promise.race([p1, tm]);
 }
