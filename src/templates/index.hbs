@@ -2,7 +2,7 @@
 {{#if @root.exportCore}}
 
 export { ApiError } from './core/ApiError';
-export { OpenAPI } from './core/OpenAPI';
+export { OpenAPI, AddRequestInterceptor, AddResponseInterceptor, SetServiceApiTimeout } from './core/OpenAPI';
 {{/if}}
 {{#if @root.exportModels}}
 {{#if models}}

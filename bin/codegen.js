@@ -111,6 +111,7 @@ async function main() {
   .version('0.0.1')
   .option('-i, --input <input>', 'Input dir')
   .option('-o, --output <output>', 'Output dir')
+  .option('-r, --remove', 'remove exists dir')
   .parse(process.argv);
 
   const opts = program.opts();
@@ -132,9 +133,28 @@ async function main() {
     console.error('input must be dir, failed.');
     return;
   }
-  let arr = fs.readdirSync(opts.input, {
-    withFileTypes: true,
-  });
+  // 输出要么不存在 要么是文件夹 不可以是其他文件
+  if(fs.existsSync(opts.output)) {
+    const out_stat = fs.lstatSync(opts.output);
+    if(!stat.isDirectory()) {
+      console.error('output must be dir or not exists, failed.');
+      return;
+    }
+  }
+
+  // 如果需要先删除输出目录
+  if(opts.remove) {
+    // for 14.14.0 or later.
+    // fs.rmSync(opts.output, {
+    //   force: false,
+    //   maxRetries: 0,
+    //   recursive: true,
+    // });
+    fs.rmdirSync(opts.output, {
+      maxRetries: 0,
+      recursive: true,
+    });
+  }
 
   // 先产生 core
   await OpenAPI.generate({
@@ -148,6 +168,9 @@ async function main() {
   });
 
   // 再逐个解析 并生成代码
+  let arr = fs.readdirSync(opts.input, {
+    withFileTypes: true,
+  });
   for(let i=0; i!==arr.length; i++) {
     let item = arr[i];
     try {
