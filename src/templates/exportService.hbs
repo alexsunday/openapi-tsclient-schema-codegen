@@ -81,9 +81,8 @@ export class {{{name}}} {
                 {{/each}}
             },
             {{/if}}
-        });
+        }, "{{{operationId}}}", schemas);
 
-        __checkJsonSchema("{{{operationId}}}", schemas, result);
         return result.body;
     }
 

@@ -53,7 +53,7 @@ import { OpenAPI } from './OpenAPI';
  * @returns ApiResult
  * @throws ApiError
  */
-export async function request(options: ApiRequestOptions): Promise<ApiResult> {
+export async function request(options: ApiRequestOptions, operationId: string, schemas: any): Promise<ApiResult> {
     const url = getUrl(options);
 
     // request interceptor
@@ -73,7 +73,23 @@ export async function request(options: ApiRequestOptions): Promise<ApiResult> {
         status: response.status,
         statusText: response.statusText,
         body: responseHeader || responseBody,
+        errors: [],
     };
+
+    // response code error?
+    const hasErr = catchErrors(options, result);
+    if(hasErr) {
+        result.errors.push(hasErr);
+    }
+
+    // json schema error?
+    let checkErr = checkJsonSchema(operationId, schemas, result);
+    if(checkErr === false) {
+        console.warn("cannot found json schema, ignored json schema check.");
+    }
+    if(checkErr !== false && checkErr !== true) {
+        result.errors.push(checkErr);
+    }
 
     // response interceptor
     let rspInterceptors = OpenAPI.RspInterceptors;
@@ -82,6 +98,9 @@ export async function request(options: ApiRequestOptions): Promise<ApiResult> {
         result = await Promise.resolve<ApiResult>(rs)
     }
 
-    catchErrors(options, result);
+    if(result.errors.length > 0) {
+        throw result.errors;
+    }
+
     return result;
 }

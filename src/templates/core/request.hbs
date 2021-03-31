@@ -6,7 +6,7 @@
 
 import Ajv from 'ajv';
 
-export function checkJsonSchema(operationId: string, schemas: any, result: ApiResult):boolean {
+export function checkJsonSchema(operationId: string, schemas: any, result: ApiResult):ApiError|boolean {
   let operation = schemas[operationId];
   if(!operation) {
     return false;
@@ -26,7 +26,7 @@ export function checkJsonSchema(operationId: string, schemas: any, result: ApiRe
   const validator = ajv.compile(r);
   const valid = validator(result.body);
   if(!valid) {
-    throw new ApiError(result, "json schema check failed", validator.errors);
+    return new ApiError(result, "json schema check failed", validator.errors);
   }
 
   return true;

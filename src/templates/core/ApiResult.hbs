@@ -1,9 +1,11 @@
 {{>header}}
 
+import type { ApiError } from './ApiError';
 export type ApiResult = {
     readonly url: string;
     readonly ok: boolean;
     readonly status: number;
     readonly statusText: string;
     readonly body: any;
+    errors: Array<ApiError>;
 }
