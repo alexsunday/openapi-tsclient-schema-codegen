@@ -37,7 +37,7 @@ export class {{{name}}} {
      * @throws ApiError
      */
     public static async {{{name}}}({{>parameters}}): Promise<{{>result}}> {
-        const result = await __request({
+        const __result = await __request({
             method: '{{{method}}}',
             path: `{{{path}}}`,
             {{#if parametersCookie}}
@@ -83,7 +83,7 @@ export class {{{name}}} {
             {{/if}}
         }, "{{{operationId}}}", schemas);
 
-        return result.body;
+        return __result.body;
     }
 
     {{/each}}
