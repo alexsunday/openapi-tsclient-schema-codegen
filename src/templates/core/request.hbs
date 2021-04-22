@@ -21,7 +21,10 @@ export function checkJsonSchema(operationId: string, schemas: any, result: ApiRe
     return false;
   }
 
-  const ajv = new Ajv({schemaId: 'id'});
+  const ajv = new Ajv({
+    schemaId: 'id',
+    meta: false,
+  });
   ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
   const validator = ajv.compile(r);
   const valid = validator(result.body);
