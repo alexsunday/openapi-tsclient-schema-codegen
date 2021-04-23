@@ -3,7 +3,7 @@ function getRequestBody(options: ApiRequestOptions): BodyInit | undefined {
         return getFormData(options.formData);
     }
     if (options.body) {
-        if (isString(options.body) || isBlob(options.body)) {
+        if (isString(options.body) || isBlob(options.body) || isFormData(options.body)) {
             return options.body;
         } else {
             return JSON.stringify(options.body);
