@@ -56,6 +56,55 @@ import { OpenAPI } from './OpenAPI';
  * @returns ApiResult
  * @throws ApiError
  */
+export async function rawRequest(options: ApiRequestOptions): Promise<ApiResult> {
+    const url = getUrl(options);
+
+    // request interceptor
+    let reqInterceptors = OpenAPI.ReqInterceptors;
+    for(let i=0; i!==reqInterceptors.length; i++) {
+        let rs = reqInterceptors[i](options);
+        options = await Promise.resolve<ApiRequestOptions>(rs);
+    }
+
+    const response = await sendRequest(options);
+    const responseBody = await getResponseBody(response);
+    const responseHeader = getResponseHeader(response, options.responseHeader);
+
+    let result: ApiResult = {
+        url,
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText,
+        body: responseHeader || responseBody,
+        errors: [],
+    };
+
+    // response code error?
+    const hasErr = catchErrors(options, result);
+    if(hasErr) {
+        result.errors.push(hasErr);
+    }
+
+    // response interceptor
+    let rspInterceptors = OpenAPI.RspInterceptors;
+    for(let i=0; i!==rspInterceptors.length; i++) {
+        let rs = rspInterceptors[i](result);
+        result = await Promise.resolve<ApiResult>(rs)
+    }
+
+    if(result.errors.length > 0) {
+        throw result.errors;
+    }
+
+    return result;
+}
+
+/**
+ * Request using fetch client
+ * @param options The request options from the the service
+ * @returns ApiResult
+ * @throws ApiError
+ */
 export async function request(options: ApiRequestOptions, operationId: string, schemas: any): Promise<ApiResult> {
     const url = getUrl(options);
 
