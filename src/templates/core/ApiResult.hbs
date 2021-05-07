@@ -7,5 +7,6 @@ export type ApiResult = {
     readonly status: number;
     readonly statusText: string;
     readonly body: any;
+    readonly response: Response;
     errors: Array<ApiError>;
 }

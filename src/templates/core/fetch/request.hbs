@@ -76,6 +76,7 @@ export async function rawRequest(options: ApiRequestOptions): Promise<ApiResult>
         status: response.status,
         statusText: response.statusText,
         body: responseHeader || responseBody,
+        response: response,
         errors: [],
     };
 
@@ -125,6 +126,7 @@ export async function request(options: ApiRequestOptions, operationId: string, s
         status: response.status,
         statusText: response.statusText,
         body: responseHeader || responseBody,
+        response: response,
         errors: [],
     };
 
