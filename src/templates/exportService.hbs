@@ -7,6 +7,7 @@ import type { {{{this}}} } from '../models/{{{this}}}';
 {{/if}}
 import { request as __request, checkJsonSchema as __checkJsonSchema } from '../../core/request';
 const schemas = require("../schema").default;
+import {ApiResult} from '../../core/ApiResult';
 {{#if @root.useVersion}}
 import { OpenAPI } from '../core/OpenAPI';
 {{/if}}
@@ -84,6 +85,79 @@ export class {{{name}}} {
         }, "{{{operationId}}}", schemas);
 
         return __result.body;
+    }
+
+
+    /**
+    {{#if deprecated}}
+     * @deprecated
+    {{/if}}
+    {{#if summary}}
+     * {{{summary}}}
+    {{/if}}
+    {{#if description}}
+     * {{{description}}}
+    {{/if}}
+    {{#unless @root.useOptions}}
+    {{#if parameters}}
+    {{#each parameters}}
+     * @param {{{name}}} {{{description}}}
+    {{/each}}
+    {{/if}}
+    {{/unless}}
+    {{#each results}}
+     * @returns {{{type}}} {{{description}}}
+    {{/each}}
+     * @throws ApiError
+     */
+    public static async _raw_{{{name}}}({{>parameters}}): Promise<ApiResult> {
+        const __result = await __request({
+            method: '{{{method}}}',
+            path: `{{{path}}}`,
+            {{#if parametersCookie}}
+            cookies: {
+                {{#each parametersCookie}}
+                '{{{prop}}}': {{{name}}},
+                {{/each}}
+            },
+            {{/if}}
+            {{#if parametersHeader}}
+            headers: {
+                {{#each parametersHeader}}
+                '{{{prop}}}': {{{name}}},
+                {{/each}}
+            },
+            {{/if}}
+            {{#if parametersQuery}}
+            query: {
+                {{#each parametersQuery}}
+                '{{{prop}}}': {{{name}}},
+                {{/each}}
+            },
+            {{/if}}
+            {{#if parametersForm}}
+            formData: {
+                {{#each parametersForm}}
+                '{{{prop}}}': {{{name}}},
+                {{/each}}
+            },
+            {{/if}}
+            {{#if parametersBody}}
+            body: {{{parametersBody.name}}},
+            {{/if}}
+            {{#if responseHeader}}
+            responseHeader: '{{{responseHeader}}}',
+            {{/if}}
+            {{#if errors}}
+            errors: {
+                {{#each errors}}
+                {{{code}}}: `{{{description}}}`,
+                {{/each}}
+            },
+            {{/if}}
+        }, "{{{operationId}}}", schemas);
+
+        return __result;
     }
 
     {{/each}}

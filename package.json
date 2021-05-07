@@ -1,6 +1,6 @@
 {
     "name": "openapi-tsclient-schema-codegen",
-    "version": "0.0.16",
+    "version": "0.0.17",
     "description": "Library that generates Typescript clients based on the OpenAPI specification, fork from ferdikoomen/openapi-typescript-codegen",
     "author": "Ferdi Koomen",
     "homepage": "https://github.com/alexsunday/openapi-typescript-codegen",
