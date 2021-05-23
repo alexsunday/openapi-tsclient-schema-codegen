@@ -9,7 +9,7 @@ async function sendRequest(options: ApiRequestOptions): Promise<Response> {
     }
     let url = options.url;
     if(!url) {
-        url = getUrl(options);
+        url = getUrl(OpenAPI.BASE, options.path, options.query);
     }
 
     let tm = new Promise<Response>((_, reject) => {
