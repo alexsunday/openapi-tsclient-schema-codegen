@@ -3,7 +3,7 @@
 import { ApiError } from './ApiError';
 import type { ApiRequestOptions } from './ApiRequestOptions';
 import type { ApiResult } from './ApiResult';
-import { OpenAPI } from './OpenAPI';
+import { OpenAPI, requestOption } from './OpenAPI';
 
 {{>functions/isDefined}}
 
@@ -106,11 +106,12 @@ export async function rawRequest(options: ApiRequestOptions): Promise<ApiResult>
  * @returns ApiResult
  * @throws ApiError
  */
-export async function request(options: ApiRequestOptions, operationId: string, schemas: any): Promise<ApiResult> {
+export async function request(options: ApiRequestOptions, op: requestOption): Promise<ApiResult> {
     const url = getUrl(options);
 
     // request interceptor
     let reqInterceptors = OpenAPI.ReqInterceptors;
+    reqInterceptors.unshift(...op.reqInterceptors);
     for(let i=0; i!==reqInterceptors.length; i++) {
         let rs = reqInterceptors[i](options);
         options = await Promise.resolve<ApiRequestOptions>(rs);
@@ -137,16 +138,19 @@ export async function request(options: ApiRequestOptions, operationId: string, s
     }
 
     // json schema error?
-    let checkErr = checkJsonSchema(operationId, schemas, result);
-    if(checkErr === false) {
-        console.warn("cannot found json schema, ignored json schema check.");
-    }
-    if(checkErr !== false && checkErr !== true) {
-        result.errors.push(checkErr);
+    if(op.rspValidator) {
+        let checkErr = checkJsonSchema(op.operationId, op.schemas, result);
+        if(checkErr === false) {
+            console.warn("cannot found json schema, ignored json schema check.");
+        }
+        if(checkErr !== false && checkErr !== true) {
+            result.errors.push(checkErr);
+        }
     }
 
     // response interceptor
     let rspInterceptors = OpenAPI.RspInterceptors;
+    rspInterceptors.push(...op.rspInterceptors);
     for(let i=0; i!==rspInterceptors.length; i++) {
         let rs = rspInterceptors[i](result);
         result = await Promise.resolve<ApiResult>(rs)

@@ -5,9 +5,10 @@
 import type { {{{this}}} } from '../models/{{{this}}}';
 {{/each}}
 {{/if}}
-import { request as __request, checkJsonSchema as __checkJsonSchema } from '../../core/request';
+import { request as __request, rawRequest as __rawRequest, checkJsonSchema as __checkJsonSchema } from '../../core/request';
 const schemas = require("../schema").default;
 import {ApiResult} from '../../core/ApiResult';
+import {apiOption, requestOption} from '../../core/OpenAPI';
 {{#if @root.useVersion}}
 import { OpenAPI } from '../core/OpenAPI';
 {{/if}}
@@ -37,7 +38,15 @@ export class {{{name}}} {
     {{/each}}
      * @throws ApiError
      */
-    public static async {{{name}}}({{>parameters}}): Promise<{{>result}}> {
+    public static async {{{name}}}({{>parameters}}{{#if parameters}}, {{/if}}op?:apiOption): Promise<{{>result}}> {
+        const _op: requestOption = {
+            operationId: "{{{operationId}}}",
+            schemas: schemas,
+            reqInterceptors: op?.reqInterceptors || [],
+            rspInterceptors: op?.rspInterceptors || [],
+            raw: false,
+            rspValidator: op?.rspValidator === undefined ? true:false,
+        }
         const __result = await __request({
             method: '{{{method}}}',
             path: `{{{path}}}`,
@@ -82,7 +91,7 @@ export class {{{name}}} {
                 {{/each}}
             },
             {{/if}}
-        }, "{{{operationId}}}", schemas);
+        }, _op);
 
         return __result.body;
     }
@@ -111,7 +120,7 @@ export class {{{name}}} {
      * @throws ApiError
      */
     public static async _raw_{{{name}}}({{>parameters}}): Promise<ApiResult> {
-        const __result = await __request({
+        const __result = await __rawRequest({
             method: '{{{method}}}',
             path: `{{{path}}}`,
             {{#if parametersCookie}}
@@ -155,7 +164,7 @@ export class {{{name}}} {
                 {{/each}}
             },
             {{/if}}
-        }, "{{{operationId}}}", schemas);
+        });
 
         return __result;
     }

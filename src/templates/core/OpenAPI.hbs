@@ -34,6 +34,21 @@ export const OpenAPI: Config = {
     TIMEOUT: 30 * 1000,
 };
 
+export type apiOption = {
+    reqInterceptors?: RequestInterceptor[];
+    rspInterceptors?: ResponseInterceptor[];
+    rspValidator?: boolean;
+}
+
+export type requestOption = {
+    operationId: string;
+    schemas: any;
+    reqInterceptors: RequestInterceptor[];
+    rspInterceptors: ResponseInterceptor[];
+    raw: boolean;
+    rspValidator: boolean;
+}
+
 export function AddRequestInterceptor(r: RequestInterceptor) {
     OpenAPI.ReqInterceptors.push(r);
 }
