@@ -64,19 +64,31 @@ export async function rawRequest(options: ApiRequestOptions): Promise<ApiResult>
         options = await Promise.resolve<ApiRequestOptions>(rs);
     }
 
-    const response = await sendRequest(options);
-    const responseBody = await getResponseBody(response);
-    const responseHeader = getResponseHeader(response, options.responseHeader);
-
-    let result: ApiResult = {
-        url: options.url,
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        body: responseHeader || responseBody,
-        response: response,
-        errors: [],
-    };
+    let result: ApiResult;
+    try {
+        const response = await sendRequest(options);
+        const responseBody = await getResponseBody(response);
+        const responseHeader = getResponseHeader(response, options.responseHeader);
+        result = {
+            url: options.url || "",
+            ok: response.ok,
+            status: response.status,
+            statusText: response.statusText,
+            body: responseHeader || responseBody,
+            response: response,
+            errors: [],
+        };
+    } catch(e) {
+        result = {
+            url: options.url || "",
+            ok: false,
+            status: 0,
+            statusText: "Failed to fetch",
+            body: "Failed to fetch",
+            response: new Response(),
+            errors: [],
+        };
+    }
 
     // response code error?
     const hasErr = catchErrors(options, result);
@@ -113,19 +125,31 @@ export async function request(options: ApiRequestOptions, op: requestOption): Pr
         options = await Promise.resolve<ApiRequestOptions>(rs);
     }
 
-    const response = await sendRequest(options);
-    const responseBody = await getResponseBody(response);
-    const responseHeader = getResponseHeader(response, options.responseHeader);
-
-    let result: ApiResult = {
-        url: options.url,
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText,
-        body: responseHeader || responseBody,
-        response: response,
-        errors: [],
-    };
+    let result: ApiResult;
+    try {
+        const response = await sendRequest(options);
+        const responseBody = await getResponseBody(response);
+        const responseHeader = getResponseHeader(response, options.responseHeader);
+        result = {
+            url: options.url || "",
+            ok: response.ok,
+            status: response.status,
+            statusText: response.statusText,
+            body: responseHeader || responseBody,
+            response: response,
+            errors: [],
+        };
+    } catch(e) {
+        result = {
+            url: options.url || "",
+            ok: false,
+            status: 0,
+            statusText: "Failed to fetch",
+            body: "Failed to fetch",
+            response: new Response(),
+            errors: [],
+        };
+    }
 
     // response code error?
     const hasErr = catchErrors(options, result);

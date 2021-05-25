@@ -4870,6 +4870,24 @@ openapi-schema-to-json-schema@^2.1.0:
   dependencies:
     deep-equal "^1.0.1"
 
+openapi-tsclient-schema-codegen@0.0.21:
+  version "0.0.21"
+  resolved "https://registry.npmjs.org/openapi-tsclient-schema-codegen/-/openapi-tsclient-schema-codegen-0.0.21.tgz#ae80de609241660f701b3d2a8592c75a69cf6c05"
+  integrity sha512-nlWyR/KOHGdNceVgRKNaphLMC38o2eaZ/ZeQHdKOmPDhsoZ8cIry/lfNOIIkeWIixcMovGQs3GKCl7etrzf0Zg==
+  dependencies:
+    "@apidevtools/swagger-parser" "^10.0.2"
+    "@openapi-contrib/openapi-schema-to-json-schema" "^3.0.4"
+    ajv "6.0.0"
+    camelcase "^6.2.0"
+    commander "^7.0.0"
+    handlebars "^4.7.6"
+    js-yaml "^4.0.0"
+    json-schema-ref-parser "^9.0.7"
+    mkdirp "^1.0.4"
+    openapi-typescript "^3.1.2"
+    openapi2schema "^0.5.0"
+    rimraf "^3.0.2"
+
 openapi-typescript@^3.1.2:
   version "3.1.2"
   resolved "https://registry.npm.taobao.org/openapi-typescript/download/openapi-typescript-3.1.2.tgz#aa777a5662300eb14acc6712346e2b8f65da968b"
