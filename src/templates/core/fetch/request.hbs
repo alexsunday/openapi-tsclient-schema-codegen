@@ -3,7 +3,7 @@
 import { ApiError } from './ApiError';
 import type { ApiRequestOptions } from './ApiRequestOptions';
 import type { ApiResult } from './ApiResult';
-import { OpenAPI, requestOption } from './OpenAPI';
+import { OpenAPI, requestOption, RequestInterceptor, ResponseInterceptor } from './OpenAPI';
 
 {{>functions/isDefined}}
 
@@ -118,8 +118,9 @@ export async function rawRequest(options: ApiRequestOptions): Promise<ApiResult>
  */
 export async function request(options: ApiRequestOptions, op: requestOption): Promise<ApiResult> {
     // request interceptor
-    let reqInterceptors = OpenAPI.ReqInterceptors;
-    reqInterceptors.unshift(...op.reqInterceptors);
+    const reqInterceptors: RequestInterceptor[] = [];
+    reqInterceptors.push(...op.reqInterceptors);
+    reqInterceptors.push(...OpenAPI.ReqInterceptors);
     for(let i=0; i!==reqInterceptors.length; i++) {
         let rs = reqInterceptors[i](options);
         options = await Promise.resolve<ApiRequestOptions>(rs);
@@ -169,8 +170,9 @@ export async function request(options: ApiRequestOptions, op: requestOption): Pr
     }
 
     // response interceptor
-    let rspInterceptors = OpenAPI.RspInterceptors;
+    let rspInterceptors:ResponseInterceptor[] = [];
     rspInterceptors.push(...op.rspInterceptors);
+    rspInterceptors.push(...OpenAPI.RspInterceptors);
     for(let i=0; i!==rspInterceptors.length; i++) {
         let rs = rspInterceptors[i](result);
         result = await Promise.resolve<ApiResult>(rs)

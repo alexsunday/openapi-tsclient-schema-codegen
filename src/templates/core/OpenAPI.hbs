@@ -5,8 +5,8 @@ import type { ApiResult } from './ApiResult';
 
 type Resolver<T> = (options: ApiRequestOptions) => Promise<T>;
 type Headers = Record<string, string>;
-type RequestInterceptor = (options: ApiRequestOptions) => ApiRequestOptions | Promise<ApiRequestOptions>;
-type ResponseInterceptor = (result: ApiResult) => ApiResult | Promise<ApiResult>;
+export type RequestInterceptor = (options: ApiRequestOptions) => ApiRequestOptions | Promise<ApiRequestOptions>;
+export type ResponseInterceptor = (result: ApiResult) => ApiResult | Promise<ApiResult>;
 
 type Config = {
     BASE: string;
