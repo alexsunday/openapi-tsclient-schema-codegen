@@ -3,7 +3,7 @@
 package.json:
   "vuePlugins": {
     "service": [
-      "./node_modules/.bin/codegen-watch"
+      "./node_modules/.bin/watch"
     ]
   }
 */
@@ -63,24 +63,38 @@ function fa(opt: tsCodegenOptions) {
 }
 
 /*
-module.exports = (api: PluginAPI, projectOptions: ProjectOptions) => {
-  const {serve, build} = api.service.commands;
-  const serveFn = serve.fn;
-  const buildFn = build.fn;
+vue.config.js
 
-  serve.fn = (...args) => {
-    fa({});
-    serveFn(...args);
-  }
-  build.fn = (...args) => {
-    fa({});
-    buildFn(...args);
+pluginOptions: {
+  codegen: {
   }
 }
 */
 
+module.exports = (api: PluginAPI, projectOptions: ProjectOptions) => {
+  const {serve, build} = api.service.commands;
+  const serveFn = serve.fn;
+  // const buildFn = build.fn;
+  let opts:any = projectOptions.pluginOptions;
+  let codegenOpt = opts?.codegen as tsCodegenOptions;
+  if(codegenOpt === undefined) {
+    codegenOpt = {};
+  }
+
+  serve.fn = (...args) => {
+    fa(codegenOpt);
+    serveFn(...args);
+  }
+  // build.fn = (...args) => {
+  //   fa({});
+  //   buildFn(...args);
+  // }
+}
+
+/*
 fa({
   yamlPath: './test/yaml',
   codePath: './test/dist',
   genCore: true,
 });
+*/

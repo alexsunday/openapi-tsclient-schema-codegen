@@ -36,21 +36,24 @@
     "module": "dist/index.js",
     "types": "types/index.d.ts",
     "bin": {
-        "codegen": "bin/codegen.js"
+        "codegen": "bin/codegen.js",
+        "yamlwatch": "bin/watch.js"
     },
     "files": [
         "bin/index.js",
         "bin/codegen.js",
+        "bin/utils.ts",
+        "bin/watch.js",
         "dist/index.js",
         "types/index.d.ts"
     ],
     "scripts": {
         "action": "yarn build && node ./bin/index.js -i yaml/taas.yaml -o codegen && node bin/exp_schema.js yaml/taas.yaml >codegen/schema.js",
-        "schema": "openapi2schema -i taas.yaml -p >dist/schema.js",
         "clean": "rimraf ./dist ./test/generated ./test/e2e/generated ./samples/generated ./coverage ./node_modules/.cache",
         "build": "rollup --config --environment NODE_ENV:development",
         "build:watch": "rollup --config --environment NODE_ENV:development --watch",
         "release": "rollup --config --environment NODE_ENV:production",
+        "releaseScript": "npx tsc bin/watch.ts bin/codegen.ts",
         "run": "node ./test/index.js",
         "test": "jest --selectProjects UNIT",
         "test:update": "jest --selectProjects UNIT --updateSnapshot",
@@ -75,7 +78,6 @@
         "json-schema-ref-parser": "^9.0.7",
         "mkdirp": "^1.0.4",
         "openapi-typescript": "^3.1.2",
-        "openapi2schema": "^0.5.0",
         "rimraf": "^3.0.2"
     },
     "devDependencies": {
