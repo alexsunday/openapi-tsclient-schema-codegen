@@ -60,13 +60,15 @@
         "eslint": "eslint \"./src/**/*.ts\" \"./bin/index.js\" \"./types/index.d.ts\"",
         "eslint:fix": "eslint \"./src/**/*.ts\" \"./bin/index.js\" \"./types/index.d.ts\" --fix",
         "prettier": "prettier \"./src/**/*.ts\" \"./bin/index.js\" \"./types/index.d.ts\" --check",
-        "prettier:fix": "prettier \"./src/**/*.ts\" \"./bin/index.js\" \"./types/index.d.ts\" --write",
-        "codecov": "codecov --token=66c30c23-8954-4892-bef9-fbaed0a2e42b"
+        "prettier:fix": "prettier \"./src/**/*.ts\" \"./bin/index.js\" \"./types/index.d.ts\" --write"
     },
     "dependencies": {
         "@apidevtools/swagger-parser": "^10.0.2",
         "@openapi-contrib/openapi-schema-to-json-schema": "^3.0.4",
+        "@vue/cli-service": "^4.5.13",
+        "ajv": "6.0.0",
         "camelcase": "^6.2.0",
+        "chokidar": "^3.5.1",
         "commander": "^7.0.0",
         "handlebars": "^4.7.6",
         "js-yaml": "^4.0.0",
@@ -74,8 +76,7 @@
         "mkdirp": "^1.0.4",
         "openapi-typescript": "^3.1.2",
         "openapi2schema": "^0.5.0",
-        "rimraf": "^3.0.2",
-        "ajv": "6.0.0"
+        "rimraf": "^3.0.2"
     },
     "devDependencies": {
         "@babel/cli": "7.13.10",

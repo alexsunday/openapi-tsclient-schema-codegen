@@ -1,16 +1,11 @@
-#!/usr/bin/env node
+import * as fs from 'fs';
+import * as path from 'path';
 
-'use strict';
-
-const fs = require("fs");
-const path = require("path");
-const program = require("commander");
-// const OpenAPI = require('openapi-typescript-codegen');
 const OpenAPI = require(path.resolve(__dirname, '../dist/index.js'));
 const SwaggerParser = require("@apidevtools/swagger-parser");
 const toJsonSchema = require('@openapi-contrib/openapi-schema-to-json-schema');
 
-const minimal_openapi = {
+export const minimal_openapi = {
   "openapi": "3.0.0",
   "info": {
     "version": "0.0.1",
@@ -19,9 +14,9 @@ const minimal_openapi = {
   "paths": {}
 }
 
-const methods = ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH', 'TRACE'];
+export const methods = ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH', 'TRACE'];
 
-async function export_schema(yaml_path, out_dir) {
+export async function export_schema(yaml_path: string, out_dir: string) {
   let parser = new SwaggerParser();
   let r = await parser.dereference(yaml_path);
 
@@ -74,19 +69,20 @@ async function export_schema(yaml_path, out_dir) {
   fs.writeFileSync(out_path, content);
 }
 
-async function yaml_code_generate(item, input, output) {
-  if(!item.isFile()) {
+/*
+fileName: user.v1.yaml
+baseDir: ../
+output: src/request
+*/
+export async function yaml_file_to_code(fileName: string, baseDir: string, output: string) {
+  if(!fileName.toLowerCase().endsWith('.yaml')) {
     return -1;
   }
-  const fname = item.name;
-  if(!fname.toLowerCase().endsWith('.yaml')) {
-    return -1;
-  }
-  const base_name = fname.slice(0, fname.length - 5);
+  const base_name = fileName.slice(0, fileName.length - 5);
   if(!base_name) {
     return -1;
   }
-  const full_path = path.join(input, fname);
+  const full_path = path.join(baseDir, fileName);
 
   const out_dir = path.join(output, base_name)
   // 产生 api 文件
@@ -103,88 +99,14 @@ async function yaml_code_generate(item, input, output) {
   return 0;
 }
 
-/*
-1. 产生 core
-*/
-async function main() {
-  program
-  .version('0.0.1')
-  .option('-i, --input <input>', 'Input dir')
-  .option('-o, --output <output>', 'Output dir')
-  .option('-r, --remove', 'remove exists dir')
-  .parse(process.argv);
-
-  const opts = program.opts();
-  if(!!!opts.input) {
-    console.error("Usage error!");
-    return;
-  }
-  if(!!!opts.output) {
-    console.error("Usage error!");
-    return;
-  }
-
-  if(!fs.existsSync(opts.input)) {
-    console.error('input not exists!');
-    return;
-  }
-  const stat = fs.lstatSync(opts.input);
-  if(!stat.isDirectory()) {
-    console.error('input must be dir, failed.');
-    return;
-  }
-  // 输出要么不存在 要么是文件夹 不可以是其他文件
-  if(fs.existsSync(opts.output)) {
-    const out_stat = fs.lstatSync(opts.output);
-    if(!stat.isDirectory()) {
-      console.error('output must be dir or not exists, failed.');
-      return;
-    }
-  }
-
-  // 如果需要先删除输出目录
-  if(opts.remove) {
-    // for 14.14.0 or later.
-    // fs.rmSync(opts.output, {
-    //   force: false,
-    //   maxRetries: 0,
-    //   recursive: true,
-    // });
-    fs.rmdirSync(opts.output, {
-      maxRetries: 0,
-      recursive: true,
-    });
-  }
-
-  // 先产生 core
+export async function yaml_core_to_code(output: string) {
   await OpenAPI.generate({
     input: minimal_openapi,
-    output: opts.output,
+    output: output,
     useOptions: true,
     exportCore: true,
     exportModels: false,
     exportServices: false,
     exportSchemas: false,
   });
-
-  // 再逐个解析 并生成代码
-  let arr = fs.readdirSync(opts.input, {
-    withFileTypes: true,
-  });
-  for(let i=0; i!==arr.length; i++) {
-    let item = arr[i];
-    try {
-      let cur = await yaml_code_generate(item, opts.input, opts.output);
-      if(cur === 0) {
-        // console.log(`${item.name} code generated finished.`);
-      }
-    } catch(err) {
-      console.error(`${item.name} code generate failed.`);
-      console.error(err);
-    }
-  }
 }
-
-main().catch(err=>{
-  console.trace(err);
-});
