@@ -28,21 +28,18 @@
     ],
     "maintainers": [
         {
-            "name": "Ferdi Koomen",
-            "email": "info@madebyferdi.com"
+            "name": "sun cc"
         }
     ],
     "main": "dist/index.js",
     "module": "dist/index.js",
     "types": "types/index.d.ts",
     "bin": {
-        "codegen": "bin/codegen.js",
-        "yamlwatch": "bin/watch.js"
+        "codegen": "bin/codegen.js"
     },
     "files": [
         "bin/index.js",
         "bin/codegen.js",
-        "bin/utils.ts",
         "bin/watch.js",
         "dist/index.js",
         "types/index.d.ts"
@@ -53,7 +50,7 @@
         "build": "rollup --config --environment NODE_ENV:development",
         "build:watch": "rollup --config --environment NODE_ENV:development --watch",
         "release": "rollup --config --environment NODE_ENV:production",
-        "releaseScript": "npx tsc bin/watch.ts bin/codegen.ts",
+        "releaseScript": "rollup --config rollup.tool.config.js",
         "run": "node ./test/index.js",
         "test": "jest --selectProjects UNIT",
         "test:update": "jest --selectProjects UNIT --updateSnapshot",
@@ -68,6 +65,7 @@
     "dependencies": {
         "@apidevtools/swagger-parser": "^10.0.2",
         "@openapi-contrib/openapi-schema-to-json-schema": "^3.0.4",
+        "@rollup/plugin-json": "^4.1.0",
         "@vue/cli-service": "^4.5.13",
         "ajv": "6.0.0",
         "camelcase": "^6.2.0",

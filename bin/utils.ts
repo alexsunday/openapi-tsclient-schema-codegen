@@ -21,34 +21,34 @@ export async function export_schema(yaml_path: string, out_dir: string) {
   let r = await parser.dereference(yaml_path);
 
   let paths = r.paths;
-  let rs = {};
+  let rs: Record<string, Record<string, any>> = {};
   Object.keys(paths).map(key=>{
     let operation = paths[key];
     Object.keys(operation).map(method=>{
       if(!methods.includes(method.toUpperCase())) {
-        return null;
+        return -1;
       }
-      let operationId = operation[method].operationId;
+      let operationId: string = operation[method].operationId;
       if(!!!operationId) {
-        return null;
+        return -1;
       }
       let response = operation[method].responses;
-      let code_json_schema_map = {};
+      let code_json_schema_map: Record<string, any> = {};
       Object.keys(response).map(code=>{
         let content = response[code].content;
         if(!!!content) {
           console.log(`cannot found special code ${code} on ${yaml_path}-${operationId}`);
-          return null;
+          return -1;
         }
         let appJson = content['application/json'];
         if(!!!appJson) {
           console.log(`cannot found application/json ${code} on ${yaml_path}-${operationId}`);
-          return null;
+          return -1;
         }
         let schema = appJson.schema;
         if(!!!schema) {
           console.log(`cannot found ${code} schema on ${yaml_path}-${operationId}`);
-          return null;
+          return -1;
         }
 
         try {
@@ -57,10 +57,12 @@ export async function export_schema(yaml_path: string, out_dir: string) {
         } catch(e) {
           console.log(`${code} to jsonSchema failed on ${yaml_path}-${operationId}`);
         }
+        return 0;
       });
       rs[operationId] = {
         responses: code_json_schema_map,
       }
+      return 0;
     });
   });
   let out = JSON.stringify(rs, null, 2);

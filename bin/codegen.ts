@@ -1,7 +1,3 @@
-#!/usr/bin/env node
-
-'use strict';
-
 import * as fs from 'fs';
 import * as program from 'commander';
 import * as myUtils from './utils';

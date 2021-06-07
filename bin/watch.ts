@@ -32,6 +32,7 @@ function fileChanged(evt: string, fullPath: string, output: string) {
   const dirName = path.dirname(fullPath);
   console.info(`file ${baseName} ${evt}`);
   yaml_file_to_code(baseName, dirName, output);
+  return 0;
 }
 
 function fa(opt: tsCodegenOptions) {
@@ -81,7 +82,7 @@ module.exports = (api: PluginAPI, projectOptions: ProjectOptions) => {
     codegenOpt = {};
   }
 
-  serve.fn = (...args) => {
+  serve.fn = (...args: any[]) => {
     fa(codegenOpt);
     serveFn(...args);
   }
