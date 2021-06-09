@@ -112,3 +112,31 @@ export async function yaml_core_to_code(output: string) {
     exportSchemas: false,
   });
 }
+
+async function yaml_code_generate(item: fs.Dirent, input: string, output: string) {
+  if(!item.isFile()) {
+    return -1;
+  }
+  const fname = item.name;
+  // console.info(`item.name: ${item.name}`);
+  return yaml_file_to_code(fname, input, output);
+}
+
+// 逐个解析 并生成代码
+export async function code_generate(inputDir: string, outputDir: string) {
+  let arr = fs.readdirSync(inputDir, {
+    withFileTypes: true,
+  });
+  for(let i=0; i!==arr.length; i++) {
+    let item = arr[i];
+    try {
+      let cur = await yaml_code_generate(item, inputDir, outputDir);
+      if(cur === 0) {
+        // console.log(`${item.name} code generated finished.`);
+      }
+    } catch(err) {
+      console.error(`${item.name} code generate failed.`);
+      console.error(err);
+    }
+  }
+}

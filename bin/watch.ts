@@ -11,7 +11,7 @@ package.json:
 import * as path from 'path';
 import * as chokidar from 'chokidar';
 import {PluginAPI, ProjectOptions} from '@vue/cli-service';
-import {yaml_file_to_code, yaml_core_to_code} from './utils';
+import {yaml_file_to_code, yaml_core_to_code, code_generate} from './utils';
 
 type tsCodegenOptions = {
   yamlPath?: string;
@@ -35,32 +35,35 @@ function fileChanged(evt: string, fullPath: string, output: string) {
   return 0;
 }
 
-function fa(opt: tsCodegenOptions) {
+async function fa(opt: tsCodegenOptions) {
   const yamlPath = opt.yamlPath || './src/yaml';
   const codePath = opt.codePath || './src/request';
   const genCore = opt.genCore === undefined ? true : opt.genCore;
   const removeFirst = opt.removeFirst === undefined ? false : opt.removeFirst;
+  let ready = false;
 
-  // 先产生 core 异步
+  // 先产生 core
   if(genCore) {
-    yaml_core_to_code(codePath);
+    await yaml_core_to_code(codePath);
   }
+  await code_generate(yamlPath, codePath);
   const watcher = chokidar.watch(yamlPath, {
     persistent: true,
     depth: 0,
   });
   watcher.on('add', path=>{
-    fileChanged('add', path, codePath);
+    if(ready) {
+      fileChanged('add', path, codePath);
+    }
   }).on('change', path=>{
     fileChanged('change', path, codePath);
   }).on('unlink', path=>{
-    console.warn(`file unlinked. ${path}`);
+    // console.warn(`file unlinked. ${path}`);
   }).on('ready', ()=>{
-    console.info(`watch ready!`);
+    ready = true;
   }).on('error', path=>{
     console.error(`error at: ${path}`);
   });
-  console.info(`watch at ${yamlPath}`);
 }
 
 /*
@@ -83,8 +86,9 @@ module.exports = (api: PluginAPI, projectOptions: ProjectOptions) => {
   }
 
   serve.fn = (...args: any[]) => {
-    fa(codegenOpt);
-    serveFn(...args);
+    fa(codegenOpt).then(()=>{
+      serveFn(...args);
+    });
   }
   // build.fn = (...args) => {
   //   fa({});

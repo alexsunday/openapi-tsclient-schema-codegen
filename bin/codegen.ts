@@ -1,17 +1,10 @@
+#!/usr/bin/env node
+
 import * as fs from 'fs';
 import * as program from 'commander';
 import * as myUtils from './utils';
 
-const {yaml_file_to_code, yaml_core_to_code} = myUtils;
-
-async function yaml_code_generate(item: fs.Dirent, input: string, output: string) {
-  if(!item.isFile()) {
-    return -1;
-  }
-  const fname = item.name;
-  console.info(`item.name: ${item.name}`);
-  return yaml_file_to_code(fname, input, output);
-}
+const {code_generate, yaml_core_to_code} = myUtils;
 
 /*
 1. 产生 core
@@ -69,22 +62,8 @@ async function main() {
   // 先产生 core
   yaml_core_to_code(opts.output);
 
-  // 再逐个解析 并生成代码
-  let arr = fs.readdirSync(opts.input, {
-    withFileTypes: true,
-  });
-  for(let i=0; i!==arr.length; i++) {
-    let item = arr[i];
-    try {
-      let cur = await yaml_code_generate(item, opts.input, opts.output);
-      if(cur === 0) {
-        // console.log(`${item.name} code generated finished.`);
-      }
-    } catch(err) {
-      console.error(`${item.name} code generate failed.`);
-      console.error(err);
-    }
-  }
+  // 再产生其他 yaml 代码
+  code_generate(opts.input, opts.output);
 }
 
 if(typeof require !== 'undefined' && require.main === module) {
