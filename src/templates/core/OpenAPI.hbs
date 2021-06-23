@@ -42,6 +42,7 @@ export const OpenAPI: Config = {
 };
 
 export type apiOption = {
+    base?: string;
     reqInterceptors?: RequestInterceptor[];
     rspInterceptors?: ResponseInterceptor[];
     rspValidator?: boolean;
@@ -50,6 +51,7 @@ export type apiOption = {
 export type requestOption = {
     operationId: string;
     schemas: any;
+    base: string;
     reqInterceptors: RequestInterceptor[];
     rspInterceptors: ResponseInterceptor[];
     raw: boolean;

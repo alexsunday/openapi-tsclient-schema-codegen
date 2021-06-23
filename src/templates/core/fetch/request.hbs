@@ -50,6 +50,9 @@ import { OpenAPI, requestOption, RequestInterceptor, ResponseInterceptor } from 
 {{>functions/catchErrors}}
 
 
+{{>functions/checkJsonSchema}}
+
+
 /**
  * Request using fetch client
  * @param options The request options from the the service
@@ -110,6 +113,14 @@ export async function rawRequest(options: ApiRequestOptions): Promise<ApiResult>
     return result;
 }
 
+export function replaceBase(base: string) {
+  return (options: ApiRequestOptions): ApiRequestOptions => {
+    let rs = { ...options };
+    rs.url = getUrl(base, options.path, options.query);
+    return rs;
+  };
+}
+
 /**
  * Request using fetch client
  * @param options The request options from the the service
@@ -162,7 +173,7 @@ export async function request(options: ApiRequestOptions, op: requestOption): Pr
     if(op.rspValidator) {
         let checkErr = checkJsonSchema(op.operationId, op.schemas, result);
         if(checkErr === false) {
-            console.warn("cannot found json schema, ignored json schema check.");
+            console.warn(`[$op.operationId] ignored json schema check.`);
         }
         if(checkErr !== false && checkErr !== true) {
             result.errors.push(checkErr);
