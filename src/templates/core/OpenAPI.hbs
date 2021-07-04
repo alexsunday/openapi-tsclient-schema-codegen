@@ -51,7 +51,7 @@ export type apiOption = {
 export type requestOption = {
     operationId: string;
     schemas: any;
-    base: string;
+    base?: string;
     reqInterceptors: RequestInterceptor[];
     rspInterceptors: ResponseInterceptor[];
     raw: boolean;

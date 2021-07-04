@@ -1,8 +1,7 @@
+import { OpenAPIV3 } from "openapi-types";
+import Ajv, {ValidateFunction} from 'ajv';
 
-
-import Ajv from 'ajv';
-
-export function checkJsonSchema(operationId: string, schemas: any, result: ApiResult):ApiError|boolean {
+export function _checkJsonSchema(operationId: string, schemas: any, result: ApiResult):ApiError|boolean {
   let operation = schemas[operationId];
   if(!operation) {
     return false;
@@ -25,6 +24,254 @@ export function checkJsonSchema(operationId: string, schemas: any, result: ApiRe
   const validator = ajv.compile(r);
   const valid = validator(result.body);
   if(!valid) {
+    return new ApiError(result, "json schema check failed", validator.errors);
+  }
+
+  return true;
+}
+
+
+export type openApiSchema = {
+  schema: OpenAPIV3.SchemaObject;
+}
+
+type schemaType = {
+  $schema: string;
+  type: string;
+  properties: Record<string|number, object>,
+  definitions: object,
+  components: object,
+}
+
+function recursiveTransformOpenAPIV3Definitions(object: any) {
+  // Transformations //
+  // OpenAPIV3 nullable
+  if (object.nullable === true) {
+    if (object.enum) {
+      // Enums can not be null with type null
+      object.oneOf = [
+        { type: 'null' },
+        {
+          type: object.type,
+          enum: object.enum,
+        },
+      ];
+      delete object.type;
+      delete object.enum;
+    } else if (object.type) {
+      object.type = [object.type, 'null'];
+    } else if (object.allOf) {
+      object.anyOf = [{ allOf: object.allOf }, { type: 'null' }];
+      delete object.allOf;
+    } else if (object.oneOf || object.anyOf) {
+      const arr: any[] = object.oneOf || object.anyOf;
+      arr.push({ type: 'null' });
+    }
+
+    delete object.nullable;
+  }
+  // Remove writeOnly properties from required array
+  if (object.properties && object.required) {
+    const writeOnlyProps = Object.keys(object.properties).filter(
+      (key) => object.properties[key].writeOnly
+    );
+    writeOnlyProps.forEach((value) => {
+      const index = object.required.indexOf(value);
+      object.required.splice(index, 1);
+    });
+  }
+
+  Object.keys(object).forEach((attr) => {
+    if (typeof object[attr] === 'object' && object[attr] !== null) {
+      recursiveTransformOpenAPIV3Definitions(object[attr]);
+    } else if (Array.isArray(object[attr])) {
+      object[attr].forEach((obj) =>
+        recursiveTransformOpenAPIV3Definitions(obj)
+      );
+    }
+  });
+}
+
+function transformOpenAPIV3Definitions(schema: schemaType) {
+  if (typeof schema !== 'object') {
+    return schema;
+  }
+  const res = JSON.parse(JSON.stringify(schema));
+  recursiveTransformOpenAPIV3Definitions(res);
+  return res;
+}
+
+function compileValidators(v: Ajv, schemas: Record<string, schemaType>) {
+  const validators: Record<string, ValidateFunction> = {};
+
+  Object.keys(schemas).forEach((name) => {
+    const val = schemas[name];
+    validators[name] = v.compile(transformOpenAPIV3Definitions(val));
+  });
+
+  return validators;
+}
+
+function getSchemas(responses: Record<string, openApiSchema>, components: OpenAPIV3.ComponentsObject): Record<string, schemaType> {
+  const schemas = {};
+
+  Object.keys(responses).forEach((name) => {
+    const response = responses[name];   
+    const schema = response.schema;
+    schemas[name] = {
+      $schema: 'http://json-schema.org/schema#',
+      type: 'object',
+      properties: {
+        response: schema,
+      },
+      components: components || {},
+    };
+  });
+
+  return schemas;
+}
+
+export function IsReference (obj: any): boolean {
+  if (!!obj && obj.$ref !== null &&
+    obj.$ref !== undefined &&
+    obj.$ref.length !== null &&
+    obj.$ref.length !== undefined &&
+    typeof (obj.$ref) === 'string') {
+    return true
+  }
+  return false
+}
+
+/*
+ref: #/components/responses/NotFoundResponse
+*/
+function parseResponse(doc: OpenAPIV3.Document, ref: string): OpenAPIV3.ResponseObject|null {
+  const prefix = '#/components/responses/';
+  if(!ref.startsWith(prefix)) {
+    console.warn(`[${ref}] reference not start with [${prefix}]`);
+    return null;
+  }
+  const key = ref.slice(prefix.length);
+  if(!doc.components || !doc.components.responses) {
+    console.warn(`[${ref}] components or response empty`);
+    return null;
+  }
+  const responses = doc.components.responses;
+  if(!responses[key]) {
+    console.warn(`[${ref}] cannot found response [${key}]`);
+    return null;
+  }
+  const r0 = responses[key];
+  if(!IsReference(r0)) {
+    return r0 as OpenAPIV3.ResponseObject;;
+  }
+  // ref parse
+  const r1 = r0 as OpenAPIV3.ReferenceObject;
+  if(r1.$ref.startsWith(prefix)) {
+    return parseResponse(doc, r1.$ref);
+  }
+
+  console.warn(`[${ref}] parse failed.`);
+  return null;
+}
+
+export function checkJsonSchema(opId: string, doc: OpenAPIV3.Document, result: ApiResult): ApiError|boolean {
+  const code = result.status;
+  const obj = result.body;
+  let operation: OpenAPIV3.OperationObject|null = null;
+  for(let path in doc.paths) {
+    const pathObj = doc.paths[path];
+    if(!pathObj) {
+      console.warn(`${path} not exists`);
+      continue;
+    }
+    if(pathObj.get && pathObj.get.operationId === opId) {
+      operation = pathObj.get;
+    }
+    if(pathObj.post && pathObj.post.operationId === opId) {
+      operation = pathObj.post;
+    }
+    if(pathObj.put && pathObj.put.operationId === opId) {
+      operation = pathObj.put;
+    }
+    if(pathObj.delete && pathObj.delete.operationId === opId) {
+      operation = pathObj.delete;
+    }
+    if(pathObj.head && pathObj.head.operationId === opId) {
+      operation = pathObj.head;
+    }
+    if(pathObj.options && pathObj.options.operationId === opId) {
+      operation = pathObj.options;
+    }
+    if(pathObj.trace && pathObj.trace.operationId === opId) {
+      operation = pathObj.trace;
+    }
+    if(pathObj.patch && pathObj.patch.operationId === opId) {
+      operation = pathObj.patch;
+    }
+  }
+  if(operation === null) {
+    console.warn(`[${opId}] cannot found operation`);
+    return false;
+  }
+  const responses = operation.responses;
+  if(!responses) {
+    console.warn(`[${opId}] responses empty!`);
+    return false;
+  }
+  if(!responses[code]) {
+    console.warn(`[${opId}] [${code}] not found`);
+    return false;
+  }
+  const respRef = responses[code];
+  let resp: OpenAPIV3.ResponseObject|null = null;
+  if(IsReference(respRef)) {
+    resp = parseResponse(doc, (respRef as OpenAPIV3.ReferenceObject).$ref);
+  } else {
+    resp = respRef as OpenAPIV3.ResponseObject;
+  }
+  if(!resp) {
+    console.warn(`[${opId}] [${code}] response parse failed`);
+    return false;
+  }
+  if(!resp.content) {
+    console.warn(`[${opId}] [${code}] content empty`);
+    return false;
+  }
+  const respContent = resp.content;
+  const jsonSchema = respContent['application/json'].schema;
+  if(!jsonSchema) {
+    console.warn(`[${opId}] [${code}] schema empty`);
+    return false;
+  }
+  let rsSchema;
+  if(IsReference(jsonSchema)) {
+    rsSchema = {
+      $ref: (jsonSchema as OpenAPIV3.ReferenceObject).$ref,
+    }
+  } else {
+    rsSchema = jsonSchema as OpenAPIV3.SchemaObject;
+  }
+  const rs: Record<string, openApiSchema> = {};
+  rs[code] = {
+    schema: rsSchema,
+  }
+
+  const schemas = getSchemas(rs, doc.components);
+  const v = new Ajv({
+    useDefaults: true,
+    allErrors: true,
+    strict: false,
+    logger: false,
+  });
+
+  const validator: ValidateFunction = v.compile(transformOpenAPIV3Definitions(schemas[code]));
+  const isValid = validator({
+    response: obj === undefined ? null : obj,
+  });
+
+  if (!isValid) {
+    console.warn(`check failed, ${validator.errors.length}`);
     return new ApiError(result, "json schema check failed", validator.errors);
   }
 

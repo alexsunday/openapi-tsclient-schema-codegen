@@ -1,9 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { load as yamlLoad } from 'js-yaml';
 
 const OpenAPI = require(path.resolve(__dirname, '../dist/index.js'));
-const SwaggerParser = require("@apidevtools/swagger-parser");
-const toJsonSchema = require('@openapi-contrib/openapi-schema-to-json-schema');
 
 export const minimal_openapi = {
   "openapi": "3.0.0",
@@ -16,59 +15,12 @@ export const minimal_openapi = {
 
 export const methods = ['GET', 'PUT', 'POST', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH', 'TRACE'];
 
-export async function export_schema(yaml_path: string, out_dir: string) {
-  let parser = new SwaggerParser();
-  let r = await parser.dereference(yaml_path);
-
-  let paths = r.paths;
-  let rs: Record<string, Record<string, any>> = {};
-  Object.keys(paths).map(key=>{
-    let operation = paths[key];
-    Object.keys(operation).map(method=>{
-      if(!methods.includes(method.toUpperCase())) {
-        return -1;
-      }
-      let operationId: string = operation[method].operationId;
-      if(!!!operationId) {
-        return -1;
-      }
-      let response = operation[method].responses;
-      let code_json_schema_map: Record<string, any> = {};
-      Object.keys(response).map(code=>{
-        let content = response[code].content;
-        if(!!!content) {
-          console.log(`cannot found special code ${code} on ${yaml_path}-${operationId}`);
-          return -1;
-        }
-        let appJson = content['application/json'];
-        if(!!!appJson) {
-          console.log(`cannot found application/json ${code} on ${yaml_path}-${operationId}`);
-          return -1;
-        }
-        let schema = appJson.schema;
-        if(!!!schema) {
-          console.log(`cannot found ${code} schema on ${yaml_path}-${operationId}`);
-          return -1;
-        }
-
-        try {
-          let jsonSchema = toJsonSchema(schema);
-          code_json_schema_map[code] = jsonSchema;
-        } catch(e) {
-          console.log(`${code} to jsonSchema failed on ${yaml_path}-${operationId}`);
-        }
-        return 0;
-      });
-      rs[operationId] = {
-        responses: code_json_schema_map,
-      }
-      return 0;
-    });
-  });
-  let out = JSON.stringify(rs, null, 2);
-  const content = `const schemas = ${out}\n\nexport default schemas;\n`;
-  const out_path = path.join(out_dir, 'schema.js');
-  fs.writeFileSync(out_path, content);
+// export yaml to json
+async function write_openapi_json(yaml_path: string, out_dir: string) {
+  const content = fs.readFileSync(yaml_path, 'utf-8');
+  const doc = yamlLoad(content);
+  const out_path = path.join(out_dir, 'api.json');
+  fs.writeFileSync(out_path, JSON.stringify(doc, null, 2));
 }
 
 /*
@@ -97,7 +49,8 @@ export async function yaml_file_to_code(fileName: string, baseDir: string, outpu
     exportServices: true,
     exportSchemas: false,
   });
-  await export_schema(full_path, out_dir);
+  // await export_schema(full_path, out_dir);
+  await write_openapi_json(full_path, out_dir);
   return 0;
 }
 

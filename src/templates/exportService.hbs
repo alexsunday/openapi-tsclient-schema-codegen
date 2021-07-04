@@ -6,7 +6,7 @@ import type { {{{this}}} } from '../models/{{{this}}}';
 {{/each}}
 {{/if}}
 import { request as __request, rawRequest as __rawRequest, checkJsonSchema as __checkJsonSchema } from '../../core/request';
-const schemas = require("../schema").default;
+import schemas from '../api.json';
 import {ApiResult} from '../../core/ApiResult';
 import {apiOption, requestOption} from '../../core/OpenAPI';
 {{#if @root.useVersion}}
